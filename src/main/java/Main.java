@@ -12,6 +12,8 @@ public class Main {
             serverSocket.setReuseAddress(true);
             // Wait for connection from client.
             clientSocket = serverSocket.accept();
+            clientSocket.getOutputStream()
+                    .write(Resp.encode("PONG"));
         } catch (IOException e) {
             System.out.println("IOException: " + e.getMessage());
         } finally {
@@ -24,4 +26,6 @@ public class Main {
             }
         }
     }
+
+
 }
