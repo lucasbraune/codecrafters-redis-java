@@ -10,10 +10,15 @@ public class Main {
         try {
             serverSocket = new ServerSocket(port);
             serverSocket.setReuseAddress(true);
-            // Wait for connection from client.
-            clientSocket = serverSocket.accept();
-            clientSocket.getOutputStream()
-                    .write(Resp.encode("PONG"));
+
+            while (true) {
+                // Wait for connection from client.
+                clientSocket = serverSocket.accept();
+                clientSocket.getOutputStream()
+                        .write(Resp.encode("PONG"));
+                clientSocket.close();
+                System.out.println("Handled client request.");
+            }
         } catch (IOException e) {
             System.out.println("IOException: " + e.getMessage());
         } finally {
@@ -26,6 +31,4 @@ public class Main {
             }
         }
     }
-
-
 }
