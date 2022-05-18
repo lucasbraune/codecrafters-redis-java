@@ -1,6 +1,7 @@
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
@@ -12,12 +13,16 @@ public class Main {
             serverSocket.setReuseAddress(true);
 
             while (true) {
-                // Wait for connection from client.
                 clientSocket = serverSocket.accept();
-                clientSocket.getOutputStream()
-                        .write(Resp.encode("PONG"));
+                Scanner scanner = new Scanner(clientSocket.getInputStream());
+                while (scanner.hasNextLine()) {
+                    String inputLine = scanner.nextLine();
+                    System.out.println("Input line: " + inputLine);
+                    clientSocket.getOutputStream()
+                            .write(Resp.encode("PONG"));
+                }
                 clientSocket.close();
-                System.out.println("Handled client request.");
+                System.out.println("Client socket closed.");
             }
         } catch (IOException e) {
             System.out.println("IOException: " + e.getMessage());
