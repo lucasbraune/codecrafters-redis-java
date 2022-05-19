@@ -1,4 +1,6 @@
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Scanner;
@@ -11,18 +13,10 @@ public class Main {
         try {
             serverSocket = new ServerSocket(port);
             serverSocket.setReuseAddress(true);
-
             while (true) {
                 clientSocket = serverSocket.accept();
-                Scanner scanner = new Scanner(clientSocket.getInputStream());
-                while (scanner.hasNextLine()) {
-                    String inputLine = scanner.nextLine();
-                    System.out.println("Input line: " + inputLine);
-                    clientSocket.getOutputStream()
-                            .write(Resp.encode("PONG"));
-                }
+                handleRequests(clientSocket.getInputStream(), clientSocket.getOutputStream());
                 clientSocket.close();
-                System.out.println("Client socket closed.");
             }
         } catch (IOException e) {
             System.out.println("IOException: " + e.getMessage());
@@ -34,6 +28,15 @@ public class Main {
             } catch (IOException e) {
                 System.out.println("IOException: " + e.getMessage());
             }
+        }
+    }
+
+    private static void handleRequests(InputStream in, OutputStream out) throws IOException {
+        final String PONG = (new RespSimpleString("PONG")).toString();
+        Scanner scanner = new Scanner(in);
+        while (scanner.findWithinHorizon("PING", 0) != null) {
+            System.out.println("Received: " + scanner.match().group() + "\nSending: " + PONG);
+            out.write(PONG.getBytes());
         }
     }
 }
