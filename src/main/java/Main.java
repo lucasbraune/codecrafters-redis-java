@@ -4,6 +4,7 @@ import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Scanner;
+import java.util.regex.Pattern;
 
 public class Main {
     public static void main(String[] args) {
@@ -32,10 +33,10 @@ public class Main {
     }
 
     private static void handleRequests(InputStream in, OutputStream out) throws IOException {
-        final String PONG = (new RespSimpleString("PONG")).toString();
+        Pattern PING = Pattern.compile("\\*1\r\n\\$4\r\nping\r\n");
+        String PONG = (new RespSimpleString("PONG")).toString();
         Scanner scanner = new Scanner(in);
-        while (scanner.findWithinHorizon("PING", 0) != null) {
-            System.out.println("Received: " + scanner.match().group() + "\nSending: " + PONG);
+        while (scanner.findWithinHorizon(PING, 0) != null) {
             out.write(PONG.getBytes());
         }
     }
