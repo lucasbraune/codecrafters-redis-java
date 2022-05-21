@@ -1,3 +1,5 @@
+package redis.clone;
+
 public class RespSimpleString {
     private final String value;
 

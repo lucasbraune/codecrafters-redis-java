@@ -1,3 +1,5 @@
+package redis.clone;
+
 public class RespBulkString {
     private final String value;
 

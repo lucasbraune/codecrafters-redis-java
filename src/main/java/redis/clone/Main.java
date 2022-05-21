@@ -1,3 +1,5 @@
+package redis.clone;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -8,6 +10,7 @@ import java.util.regex.Pattern;
 
 public class Main {
     public static void main(String[] args) {
+        System.out.println("Hello!");
         ServerSocket serverSocket = null;
         Socket clientSocket = null;
         int port = 6379;
