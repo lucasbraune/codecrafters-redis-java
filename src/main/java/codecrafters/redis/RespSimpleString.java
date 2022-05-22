@@ -1,4 +1,4 @@
-package redis.clone;
+package codecrafters.redis;
 
 public class RespSimpleString {
     private final String value;
