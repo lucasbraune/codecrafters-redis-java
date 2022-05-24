@@ -27,7 +27,7 @@ public class RespBulkString {
         if (byteOfInput == -1) {
             return null;
         }
-        assertDollar(byteOfInput);
+        assertEquals('$', byteOfInput);
 
         int length = 0;
         for (byteOfInput = input.read(); byteOfInput != '\r'; byteOfInput = input.read()) {
@@ -35,7 +35,7 @@ public class RespBulkString {
             length = 10 * length + (byteOfInput - '0');
         }
 
-        assertLineFeed(input.read());
+        assertEquals('\n', input.read());
 
         byte[] data = new byte[length];
         for (int i = 0; i < length; i++) {
@@ -44,23 +44,20 @@ public class RespBulkString {
             data[i] = (byte) byteOfInput;
         }
 
+        assertEquals('\r', input.read());
+        assertEquals('\n', input.read());
+
         return new RespBulkString(new String(data));
     }
 
-    private static void assertDollar(int d) throws InputMismatchException {
-        if (d != '$') {
-            throw new InputMismatchException();
+    private static void assertEquals(int expected, int actual) throws InputMismatchException {
+        if (expected != actual) {
+            throw new InputMismatchException("Expected: " + expected + "; actual: " + actual);
         }
     }
 
     private static void assertDigit(int d) throws InputMismatchException {
         if (d < '0' || d > '9') {
-            throw new InputMismatchException();
-        }
-    }
-
-    private static void assertLineFeed(int d) throws InputMismatchException {
-        if (d != '\n') {
             throw new InputMismatchException();
         }
     }

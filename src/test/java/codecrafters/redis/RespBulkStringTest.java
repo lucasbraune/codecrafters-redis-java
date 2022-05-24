@@ -30,4 +30,14 @@ public class RespBulkStringTest {
 
         assertEquals(original, encoded);
     }
+
+    @Test
+    void testDecodeReadsEntireEncodedBulkString() throws IOException, InputMismatchException {
+        String original = "$4\r\nping\r\n";
+        InputStream inputStream = new ByteArrayInputStream(original.getBytes());
+
+        RespBulkString.decode(inputStream);
+
+        assertEquals(-1, inputStream.read());
+    }
 }

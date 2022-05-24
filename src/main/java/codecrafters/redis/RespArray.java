@@ -15,7 +15,7 @@ public class RespArray {
         this(Arrays.asList(elements));
     }
 
-    public String toString() {
+    public String encode() {
         StringBuilder sb = new StringBuilder();
         sb.append("*").append(elements.size());
         for (RespBulkString element : elements) {
