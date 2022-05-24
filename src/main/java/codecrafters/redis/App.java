@@ -10,8 +10,8 @@ import java.util.regex.Pattern;
 
 public class App {
     public static void main(String[] args) {
-        System.out.println("Hello!");
-        ServerSocket serverSocket = null;
+        System.out.println("Starting redis server.");
+        ServerSocket serverSocket;
         Socket clientSocket = null;
         int port = 6379;
         try {

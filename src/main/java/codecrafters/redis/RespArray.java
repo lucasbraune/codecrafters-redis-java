@@ -1,6 +1,7 @@
 package codecrafters.redis;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class RespArray {
@@ -8,6 +9,10 @@ public class RespArray {
 
     public RespArray(List<RespBulkString> elements) {
         this.elements = new ArrayList<>(elements);
+    }
+
+    public RespArray(RespBulkString... elements) {
+        this(Arrays.asList(elements));
     }
 
     public String toString() {
