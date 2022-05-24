@@ -1,8 +1,13 @@
 package codecrafters.redis;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import static codecrafters.redis.BasicAssertions.assertDigit;
+import static codecrafters.redis.BasicAssertions.assertEquals;
 
 public class RespArray {
     final private List<RespBulkString> elements;
@@ -15,12 +20,62 @@ public class RespArray {
         this(Arrays.asList(elements));
     }
 
+    public List<RespBulkString> getElements() {
+        return elements;
+    }
+
     public String encode() {
         StringBuilder sb = new StringBuilder();
-        sb.append("*").append(elements.size());
+        sb.append("*").append(elements.size()).append("\r\n");
         for (RespBulkString element : elements) {
-            sb.append(element.toString());
+            sb.append(element.encode());
         }
         return sb.toString();
+    }
+
+    public static RespArray decode(InputStream input) throws InputMismatchException, IOException {
+        int byteOfInput = input.read();
+        if (byteOfInput == -1) {
+            return null;
+        }
+        assertEquals('*', byteOfInput);
+
+        int length = 0;
+        for (byteOfInput = input.read(); byteOfInput != '\r'; byteOfInput = input.read()) {
+            assertDigit(byteOfInput);
+            length = 10 * length + (byteOfInput - '0');
+        }
+
+        assertEquals('\n', input.read());
+
+        List<RespBulkString> elements = new ArrayList<>(length);
+        for (int i = 0; i < length; i++) {
+            RespBulkString element = RespBulkString.decode(input);
+            assertNotNull(element);
+            elements.add(element);
+        }
+
+        return new RespArray(elements);
+    }
+
+    private static void assertNotNull(Object obj) throws InputMismatchException {
+        if (obj == null) {
+            throw new InputMismatchException("Unexpected EOF");
+        }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        RespArray respArray = (RespArray) o;
+
+        return elements.equals(respArray.elements);
+    }
+
+    @Override
+    public int hashCode() {
+        return elements.hashCode();
     }
 }

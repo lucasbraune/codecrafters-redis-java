@@ -7,7 +7,7 @@ public class RespSimpleString {
         this.value = value;
     }
 
-    public String toString() {
+    public String encode() {
         return "+" + value + "\r\n";
     }
 }

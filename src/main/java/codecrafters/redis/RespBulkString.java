@@ -3,6 +3,9 @@ package codecrafters.redis;
 import java.io.IOException;
 import java.io.InputStream;
 
+import static codecrafters.redis.BasicAssertions.assertDigit;
+import static codecrafters.redis.BasicAssertions.assertEquals;
+
 public class RespBulkString {
     private final String value;
 
@@ -48,18 +51,6 @@ public class RespBulkString {
         assertEquals('\n', input.read());
 
         return new RespBulkString(new String(data));
-    }
-
-    private static void assertEquals(int expected, int actual) throws InputMismatchException {
-        if (expected != actual) {
-            throw new InputMismatchException("Expected: " + expected + "; actual: " + actual);
-        }
-    }
-
-    private static void assertDigit(int d) throws InputMismatchException {
-        if (d < '0' || d > '9') {
-            throw new InputMismatchException();
-        }
     }
 
     private static void assertPositive(int d) throws InputMismatchException {

@@ -1,8 +1,6 @@
 package codecrafters.redis;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Scanner;
@@ -24,6 +22,8 @@ public class App {
             }
         } catch (IOException e) {
             System.out.println("IOException: " + e.getMessage());
+        } catch (InputMismatchException e) {
+            System.out.println("Bad request: " + e.getMessage());
         } finally {
             try {
                 if (clientSocket != null) {
@@ -35,12 +35,19 @@ public class App {
         }
     }
 
-    private static void handleRequests(InputStream in, OutputStream out) throws IOException {
-        Pattern PING = Pattern.compile("\\*1\r\n\\$4\r\nping\r\n");
-        String PONG = (new RespSimpleString("PONG")).toString();
-        Scanner scanner = new Scanner(in);
-        while (scanner.findWithinHorizon(PING, 0) != null) {
-            out.write(PONG.getBytes());
+    private static void handleRequests(InputStream in, OutputStream out) throws IOException, InputMismatchException {
+        String PONG = (new RespSimpleString("PONG")).encode();
+        InputStream bufferedInput = new BufferedInputStream(in);
+
+        for (RespArray request = RespArray.decode(bufferedInput);
+             request != null;
+             request = RespArray.decode(bufferedInput)
+        ) {
+            if (request.getElements().get(0).getValue().equals("ping")) {
+                out.write(PONG.getBytes());
+            } else {
+                System.out.println("Unexpected request");
+            }
         }
     }
 }
