@@ -47,10 +47,10 @@ public class RequestHandler implements Runnable {
                 try {
                     return request.getElements().get(1);
                 } catch (IndexOutOfBoundsException e) {
-                    return new RespSimpleString("Missing echo message");
+                    return new RespError("Missing echo message");
                 }
             default:
-                return new RespSimpleString("Unknown command: " + command);
+                return new RespError("Unknown command: " + command);
         }
     }
 }
