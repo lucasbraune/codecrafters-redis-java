@@ -15,7 +15,7 @@ public class RequestHandler implements Runnable {
     }
 
     /**
-     * Handles requests from this Request Handler's socket, then closes it.
+     * Handles requests from this handler's socket, then closes the socket.
      */
     @Override
     public void run() {
@@ -40,10 +40,17 @@ public class RequestHandler implements Runnable {
 
     private static RespData handleRequest(RespArray request) {
         String command = request.getElements().get(0).getValue();
-        if (command.equals("ping")) {
-            return new RespSimpleString("PONG");
-        } else {
-            return new RespSimpleString("Unknown command: " + command);
+        switch (command) {
+            case "ping":
+                return new RespSimpleString("PONG");
+            case "echo":
+                try {
+                    return request.getElements().get(1);
+                } catch (IndexOutOfBoundsException e) {
+                    return new RespSimpleString("Missing echo message");
+                }
+            default:
+                return new RespSimpleString("Unknown command: " + command);
         }
     }
 }
