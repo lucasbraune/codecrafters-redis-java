@@ -19,6 +19,7 @@ public class RequestHandler implements Runnable {
      */
     @Override
     public void run() {
+        System.out.println("Handling requests in thread " + Thread.currentThread().getName());
         // Closing a socket's input or output stream closes the socket.
         try (InputStream in = new BufferedInputStream(clientSocket.getInputStream());
              OutputStream out = clientSocket.getOutputStream()
