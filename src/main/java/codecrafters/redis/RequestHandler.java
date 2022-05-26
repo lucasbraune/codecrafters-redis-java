@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.List;
 
 public class RequestHandler implements Runnable {
 
@@ -41,21 +42,24 @@ public class RequestHandler implements Runnable {
     }
 
     private RespData handleRequest(RespArray request) {
-        if (request.getElements().isEmpty()) {
+        List<RespBulkString> elements = request.getElements();
+        if (elements.isEmpty()) {
             return new RespError("Empty request");
         }
-        String command = request.getElements().get(0).getValue();
+        String command = elements.get(0).getValue();
         if (command == null) {
             return new RespError("Null bulk string as command");
         }
+        List<RespBulkString> arguments = elements.subList(1, elements.size());
         switch (command) {
             case "ping":
-                return service.ping();
+                return service.ping(arguments);
             case "echo":
-                if (request.getElements().size() < 2) {
-                    return new RespError("Missing echo message");
-                }
-                return service.echo(request.getElements().get(1));
+                return service.echo(arguments);
+            case "get":
+                return service.get(arguments);
+            case "set":
+                return service.set(arguments);
             default:
                 return new RespError("Unknown command: " + command);
         }
