@@ -9,7 +9,7 @@ import java.util.List;
 import static codecrafters.redis.BasicAssertions.assertDigit;
 import static codecrafters.redis.BasicAssertions.assertEquals;
 
-public class RespArray {
+public class RespArray implements RespData {
     final private List<RespBulkString> elements;
 
     public RespArray(List<RespBulkString> elements) {

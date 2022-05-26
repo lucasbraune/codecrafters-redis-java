@@ -6,7 +6,7 @@ import java.io.InputStream;
 import static codecrafters.redis.BasicAssertions.assertDigit;
 import static codecrafters.redis.BasicAssertions.assertEquals;
 
-public class RespBulkString {
+public class RespBulkString implements RespData {
     private final String value;
 
     public RespBulkString(String value) {
