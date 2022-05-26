@@ -27,9 +27,10 @@ public class CacheService {
     }
 
     RespData get(List<RespBulkString> arguments) {
-        if (arguments.size() < 1) {
+        if (arguments.isEmpty()) {
             return new RespError("Missing key");
         }
-        return map.get(arguments.get(0));
+        RespBulkString value = map.get(arguments.get(0));
+        return value != null ? value : RespBulkString.NULL;
     }
 }
