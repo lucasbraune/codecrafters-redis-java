@@ -7,15 +7,12 @@ import java.net.Socket;
 public class App {
     public static void main(String[] args) {
         System.out.println("Starting redis server.");
-        ServerSocket serverSocket;
         int port = 6379;
-        try {
-            serverSocket = new ServerSocket(port);
+        try (ServerSocket serverSocket = new ServerSocket(port)) {
             serverSocket.setReuseAddress(true);
             while (true) {
-                try (Socket clientSocket = serverSocket.accept()) {
-                    handleRequests(clientSocket);
-                }
+                Socket clientSocket = serverSocket.accept();
+                handleRequests(clientSocket);
             }
         } catch (IOException e) {
             System.out.println("IOException: " + e.getMessage());
