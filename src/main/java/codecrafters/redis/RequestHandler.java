@@ -9,9 +9,11 @@ import java.net.Socket;
 public class RequestHandler implements Runnable {
 
     private final Socket clientSocket;
+    private final CacheService service;
 
-    public RequestHandler(Socket clientSocket) {
+    public RequestHandler(Socket clientSocket, CacheService service) {
         this.clientSocket = clientSocket;
+        this.service = service;
     }
 
     /**
@@ -38,20 +40,22 @@ public class RequestHandler implements Runnable {
         }
     }
 
-    private static RespData handleRequest(RespArray request) {
+    private RespData handleRequest(RespArray request) {
+        if (request.getElements().isEmpty()) {
+            return new RespError("Empty request");
+        }
         String command = request.getElements().get(0).getValue();
         if (command == null) {
             return new RespError("Null bulk string as command");
         }
         switch (command) {
             case "ping":
-                return new RespSimpleString("PONG");
+                return service.ping();
             case "echo":
-                try {
-                    return request.getElements().get(1);
-                } catch (IndexOutOfBoundsException e) {
+                if (request.getElements().size() < 2) {
                     return new RespError("Missing echo message");
                 }
+                return service.echo(request.getElements().get(1));
             default:
                 return new RespError("Unknown command: " + command);
         }
