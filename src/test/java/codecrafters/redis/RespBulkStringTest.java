@@ -40,4 +40,44 @@ public class RespBulkStringTest {
 
         assertEquals(-1, inputStream.read());
     }
+
+    @Test
+    void testEncodeEmptyString() {
+        String expected = "$0\r\n\r\n";
+
+        String actual = new RespBulkString("").encode();
+
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    void testDecodeEmptyString() throws IOException, InputMismatchException {
+        String encoded = "$0\r\n\r\n";
+        InputStream inputStream = new ByteArrayInputStream(encoded.getBytes());
+
+        RespBulkString actual = RespBulkString.decode(inputStream);
+
+        RespBulkString expected = new RespBulkString("");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    void testEncodeNull() {
+        RespBulkString bulkString = new RespBulkString(null);
+
+        String actual = bulkString.encode();
+
+        String expected = "$-1\r\n";
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    void testDecodeNull() throws IOException, InputMismatchException {
+        String encoded = "$-1\r\n";
+        InputStream inputStream = new ByteArrayInputStream(encoded.getBytes());
+
+        RespBulkString actual = RespBulkString.decode(inputStream);
+
+        assertEquals(new RespBulkString(null), actual);
+    }
 }

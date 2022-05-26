@@ -1,13 +1,15 @@
 package codecrafters.redis;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import static codecrafters.redis.BasicAssertions.assertDigit;
 import static codecrafters.redis.BasicAssertions.assertEquals;
 
 public class RespBulkString implements RespData {
     private final String value;
+
+    public static final RespBulkString NULL = new RespBulkString(null);
 
     public RespBulkString(String value) {
         this.value = value;
@@ -18,7 +20,9 @@ public class RespBulkString implements RespData {
     }
 
     public String encode() {
-        return "$" + value.length() + "\r\n" + value + "\r\n";
+        return value != null ?
+                "$" + value.length() + "\r\n" + value + "\r\n" :
+                "$-1\r\n";
     }
 
     /**
@@ -32,13 +36,22 @@ public class RespBulkString implements RespData {
         }
         assertEquals('$', byteOfInput);
 
-        int length = 0;
+        ByteArrayOutputStream lengthBytes = new ByteArrayOutputStream();
         for (byteOfInput = input.read(); byteOfInput != '\r'; byteOfInput = input.read()) {
-            assertDigit(byteOfInput);
-            length = 10 * length + (byteOfInput - '0');
+            lengthBytes.write(byteOfInput);
+        }
+        assertEquals('\n', input.read());
+
+        int length;
+        try {
+            length = Integer.parseInt(lengthBytes.toString());
+        } catch (NumberFormatException e) {
+            throw new InputMismatchException("Unable to parse length");
         }
 
-        assertEquals('\n', input.read());
+        if (length < 0) {
+            return new RespBulkString(null);
+        }
 
         byte[] data = new byte[length];
         for (int i = 0; i < length; i++) {
@@ -46,7 +59,6 @@ public class RespBulkString implements RespData {
             assertPositive(byteOfInput);
             data[i] = (byte) byteOfInput;
         }
-
         assertEquals('\r', input.read());
         assertEquals('\n', input.read());
 
@@ -66,11 +78,11 @@ public class RespBulkString implements RespData {
 
         RespBulkString that = (RespBulkString) o;
 
-        return value.equals(that.value);
+        return value != null ? value.equals(that.value) : that.value == null;
     }
 
     @Override
     public int hashCode() {
-        return value.hashCode();
+        return value != null ? value.hashCode() : 0;
     }
 }

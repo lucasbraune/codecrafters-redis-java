@@ -40,6 +40,9 @@ public class RequestHandler implements Runnable {
 
     private static RespData handleRequest(RespArray request) {
         String command = request.getElements().get(0).getValue();
+        if (command == null) {
+            return new RespError("Null bulk string as command");
+        }
         switch (command) {
             case "ping":
                 return new RespSimpleString("PONG");
