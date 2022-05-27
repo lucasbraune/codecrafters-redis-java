@@ -19,11 +19,25 @@ public class CacheService {
     }
 
     RespData set(List<RespBulkString> arguments) {
-        if (arguments.size() < 2) {
-            return new RespError("Missing key or value or both");
+        switch (arguments.size()) {
+            case 2:
+                map.put(arguments.get(0), new CacheItem(arguments.get(1)));
+                return new RespSimpleString("OK");
+            case 4:
+                String option = arguments.get(2).getValue();
+                if (option == null || !option.equalsIgnoreCase("px")) {
+                    return new RespError("Expected PX option, got " + option);
+                }
+                try {
+                    int expiration = Integer.parseInt(arguments.get(3).getValue()); // milliseconds
+                    map.put(arguments.get(0), new CacheItem(arguments.get(1), expiration));
+                    return new RespSimpleString("OK");
+                } catch (NumberFormatException e) {
+                    return new RespError("Expiration either null or not integer");
+                }
+            default:
+                return new RespError("Unexpected argument count: " + arguments.size());
         }
-        map.put(arguments.get(0), new CacheItem(arguments.get(1)));
-        return new RespSimpleString("OK");
     }
 
     RespData get(List<RespBulkString> arguments) {
@@ -35,7 +49,7 @@ public class CacheService {
         if (item == null) {
             return RespBulkString.NULL;
         }
-        if (item.isValid()) {
+        if (!item.isValid()) {
             map.remove(key);
             return RespBulkString.NULL;
         }

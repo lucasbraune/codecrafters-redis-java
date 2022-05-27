@@ -7,6 +7,10 @@ public class CacheItem {
         this.value = value;
     }
 
+    public CacheItem(RespBulkString value, int unusedExpiration) {
+        this.value = value;
+    }
+
     public RespBulkString getValue() {
         return value;
     }
