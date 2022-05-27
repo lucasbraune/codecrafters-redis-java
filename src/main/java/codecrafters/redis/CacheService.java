@@ -29,8 +29,8 @@ public class CacheService {
                     return new RespError("Expected PX option, got " + option);
                 }
                 try {
-                    int expiration = Integer.parseInt(arguments.get(3).getValue()); // milliseconds
-                    map.put(arguments.get(0), new CacheItem(arguments.get(1), expiration));
+                    int expirationInMillis = Integer.parseInt(arguments.get(3).getValue());
+                    map.put(arguments.get(0), new CacheItem(arguments.get(1), expirationInMillis));
                     return new RespSimpleString("OK");
                 } catch (NumberFormatException e) {
                     return new RespError("Expiration either null or not integer");
