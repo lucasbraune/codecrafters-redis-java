@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class CacheService {
-    private Map<RespBulkString, RespBulkString> map = new ConcurrentHashMap<>();
+    private Map<RespBulkString, CacheItem> map = new ConcurrentHashMap<>();
 
     RespData ping(List<RespBulkString> ignoredArguments) {
         return new RespSimpleString("PONG");
@@ -22,7 +22,7 @@ public class CacheService {
         if (arguments.size() < 2) {
             return new RespError("Missing key or value or both");
         }
-        map.put(arguments.get(0), arguments.get(1));
+        map.put(arguments.get(0), new CacheItem(arguments.get(1)));
         return new RespSimpleString("OK");
     }
 
@@ -30,7 +30,15 @@ public class CacheService {
         if (arguments.isEmpty()) {
             return new RespError("Missing key");
         }
-        RespBulkString value = map.get(arguments.get(0));
-        return value != null ? value : RespBulkString.NULL;
+        RespBulkString key = arguments.get(0);
+        CacheItem item = map.get(key);
+        if (item == null) {
+            return RespBulkString.NULL;
+        }
+        if (item.isValid()) {
+            map.remove(key);
+            return RespBulkString.NULL;
+        }
+        return item.getValue();
     }
 }
