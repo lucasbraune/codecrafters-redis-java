@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class CacheService {
+public class DeprecatedCacheService {
     private Map<RespBulkString, CacheItem> map = new ConcurrentHashMap<>();
 
     RespData ping(List<RespBulkString> ignoredArguments) {

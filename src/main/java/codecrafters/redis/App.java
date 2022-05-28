@@ -11,7 +11,7 @@ public class App {
         int port = 6379;
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             serverSocket.setReuseAddress(true);
-            CacheService service = new CacheService();
+            DeprecatedCacheService service = new DeprecatedCacheService();
             ExecutorService executor = Executors.newCachedThreadPool();
             while (true) {
                 Socket clientSocket = serverSocket.accept();

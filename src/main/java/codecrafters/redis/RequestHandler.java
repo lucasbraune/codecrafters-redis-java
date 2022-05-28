@@ -8,9 +8,9 @@ import codecrafters.redis.protocol.RespError;
 import java.util.List;
 
 public class RequestHandler {
-    private final CacheService service;
+    private final DeprecatedCacheService service;
 
-    public RequestHandler(CacheService service) {
+    public RequestHandler(DeprecatedCacheService service) {
         this.service = service;
     }
 
