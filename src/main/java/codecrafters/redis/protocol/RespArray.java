@@ -8,8 +8,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static codecrafters.redis.BasicAssertions.assertDigit;
-import static codecrafters.redis.BasicAssertions.assertEquals;
+import static codecrafters.redis.protocol.BasicAssertions.assertDigit;
+import static codecrafters.redis.protocol.BasicAssertions.assertEquals;
 
 public class RespArray implements RespData {
     final private List<RespBulkString> elements;

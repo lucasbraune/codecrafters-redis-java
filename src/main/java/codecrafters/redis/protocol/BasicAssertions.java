@@ -1,4 +1,6 @@
-package codecrafters.redis;
+package codecrafters.redis.protocol;
+
+import codecrafters.redis.InputMismatchException;
 
 public class BasicAssertions {
     public static void assertEquals(int expected, int actual) throws InputMismatchException {

@@ -6,7 +6,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import static codecrafters.redis.BasicAssertions.assertEquals;
+import static codecrafters.redis.protocol.BasicAssertions.assertEquals;
 
 public class RespBulkString implements RespData {
     private final String value;
