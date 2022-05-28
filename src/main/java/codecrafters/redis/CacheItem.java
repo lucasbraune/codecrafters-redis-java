@@ -1,5 +1,7 @@
 package codecrafters.redis;
 
+import codecrafters.redis.protocol.RespBulkString;
+
 import java.time.Duration;
 import java.time.Instant;
 

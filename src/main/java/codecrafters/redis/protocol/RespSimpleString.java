@@ -1,4 +1,4 @@
-package codecrafters.redis;
+package codecrafters.redis.protocol;
 
 public class RespSimpleString implements RespData {
     private final String value;
@@ -7,7 +7,7 @@ public class RespSimpleString implements RespData {
         this.value = value;
     }
 
-    public String encode() {
+    public String toRawString() {
         return "+" + value + "\r\n";
     }
 }

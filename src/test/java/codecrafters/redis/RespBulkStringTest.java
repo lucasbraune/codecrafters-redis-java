@@ -1,5 +1,6 @@
 package codecrafters.redis;
 
+import codecrafters.redis.protocol.RespBulkString;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
@@ -14,8 +15,8 @@ public class RespBulkStringTest {
     void testEncodeThenDecode() throws IOException, InputMismatchException {
         RespBulkString original = new RespBulkString("Hello");
 
-        InputStream encoded = new ByteArrayInputStream(original.encode().getBytes());
-        RespBulkString reconstructed = RespBulkString.decode(encoded);
+        InputStream encoded = new ByteArrayInputStream(original.toRawString().getBytes());
+        RespBulkString reconstructed = RespBulkString.readFrom(encoded);
 
         assertEquals(original, reconstructed);
     }
@@ -25,8 +26,8 @@ public class RespBulkStringTest {
         String original = "$4\r\nping\r\n";
         InputStream inputStream = new ByteArrayInputStream(original.getBytes());
 
-        RespBulkString decoded = RespBulkString.decode(inputStream);
-        String encoded = Objects.requireNonNull(decoded).encode();
+        RespBulkString decoded = RespBulkString.readFrom(inputStream);
+        String encoded = Objects.requireNonNull(decoded).toRawString();
 
         assertEquals(original, encoded);
     }
@@ -36,7 +37,7 @@ public class RespBulkStringTest {
         String original = "$4\r\nping\r\n";
         InputStream inputStream = new ByteArrayInputStream(original.getBytes());
 
-        RespBulkString.decode(inputStream);
+        RespBulkString.readFrom(inputStream);
 
         assertEquals(-1, inputStream.read());
     }
@@ -45,7 +46,7 @@ public class RespBulkStringTest {
     void testEncodeEmptyString() {
         String expected = "$0\r\n\r\n";
 
-        String actual = new RespBulkString("").encode();
+        String actual = new RespBulkString("").toRawString();
 
         assertEquals(expected, actual);
     }
@@ -55,7 +56,7 @@ public class RespBulkStringTest {
         String encoded = "$0\r\n\r\n";
         InputStream inputStream = new ByteArrayInputStream(encoded.getBytes());
 
-        RespBulkString actual = RespBulkString.decode(inputStream);
+        RespBulkString actual = RespBulkString.readFrom(inputStream);
 
         RespBulkString expected = new RespBulkString("");
         assertEquals(expected, actual);
@@ -65,7 +66,7 @@ public class RespBulkStringTest {
     void testEncodeNull() {
         RespBulkString bulkString = new RespBulkString(null);
 
-        String actual = bulkString.encode();
+        String actual = bulkString.toRawString();
 
         String expected = "$-1\r\n";
         assertEquals(expected, actual);
@@ -76,7 +77,7 @@ public class RespBulkStringTest {
         String encoded = "$-1\r\n";
         InputStream inputStream = new ByteArrayInputStream(encoded.getBytes());
 
-        RespBulkString actual = RespBulkString.decode(inputStream);
+        RespBulkString actual = RespBulkString.readFrom(inputStream);
 
         assertEquals(new RespBulkString(null), actual);
     }

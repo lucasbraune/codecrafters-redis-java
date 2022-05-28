@@ -1,5 +1,10 @@
 package codecrafters.redis;
 
+import codecrafters.redis.protocol.RespArray;
+import codecrafters.redis.protocol.RespBulkString;
+import codecrafters.redis.protocol.RespData;
+import codecrafters.redis.protocol.RespError;
+
 import java.util.List;
 
 public class RequestHandler {

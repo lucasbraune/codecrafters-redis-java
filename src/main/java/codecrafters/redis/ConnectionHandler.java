@@ -1,5 +1,8 @@
 package codecrafters.redis;
 
+import codecrafters.redis.protocol.RespArray;
+import codecrafters.redis.protocol.RespData;
+
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,12 +29,12 @@ public class ConnectionHandler implements Runnable {
         try (InputStream in = new BufferedInputStream(clientSocket.getInputStream());
              OutputStream out = clientSocket.getOutputStream()
         ) {
-            for (RespArray request = RespArray.decode(in);
+            for (RespArray request = RespArray.readFrom(in);
                  request != null;
-                 request = RespArray.decode(in)
+                 request = RespArray.readFrom(in)
             ) {
                 RespData response = requestHandler.handle(request);
-                out.write(response.encode().getBytes());
+                out.write(response.toRawString().getBytes());
             }
         } catch (InputMismatchException e) {
             System.out.println("Unable to parse request: " + e.getMessage());

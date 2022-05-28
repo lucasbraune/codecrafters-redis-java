@@ -1,4 +1,6 @@
-package codecrafters.redis;
+package codecrafters.redis.protocol;
+
+import codecrafters.redis.InputMismatchException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -19,7 +21,7 @@ public class RespBulkString implements RespData {
         return value;
     }
 
-    public String encode() {
+    public String toRawString() {
         return value != null ?
                 "$" + value.length() + "\r\n" + value + "\r\n" :
                 "$-1\r\n";
@@ -28,7 +30,7 @@ public class RespBulkString implements RespData {
     /**
      * See https://redis.io/docs/reference/protocol-spec/#resp-bulk-strings
      */
-    public static RespBulkString decode(InputStream input)
+    public static RespBulkString readFrom(InputStream input)
             throws InputMismatchException, IOException {
         int byteOfInput = input.read();
         if (byteOfInput == -1) {

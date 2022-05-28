@@ -1,4 +1,6 @@
-package codecrafters.redis;
+package codecrafters.redis.protocol;
+
+import codecrafters.redis.InputMismatchException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,16 +26,16 @@ public class RespArray implements RespData {
         return elements;
     }
 
-    public String encode() {
+    public String toRawString() {
         StringBuilder sb = new StringBuilder();
         sb.append("*").append(elements.size()).append("\r\n");
         for (RespBulkString element : elements) {
-            sb.append(element.encode());
+            sb.append(element.toRawString());
         }
         return sb.toString();
     }
 
-    public static RespArray decode(InputStream input) throws InputMismatchException, IOException {
+    public static RespArray readFrom(InputStream input) throws InputMismatchException, IOException {
         int byteOfInput = input.read();
         if (byteOfInput == -1) {
             return null;
@@ -50,7 +52,7 @@ public class RespArray implements RespData {
 
         List<RespBulkString> elements = new ArrayList<>(length);
         for (int i = 0; i < length; i++) {
-            RespBulkString element = RespBulkString.decode(input);
+            RespBulkString element = RespBulkString.readFrom(input);
             assertNotNull(element);
             elements.add(element);
         }
