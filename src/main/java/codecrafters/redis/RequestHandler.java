@@ -1,17 +1,14 @@
 package codecrafters.redis;
 
-import codecrafters.redis.protocol.RespArray;
-import codecrafters.redis.protocol.RespBulkString;
-import codecrafters.redis.protocol.RespData;
-import codecrafters.redis.protocol.RespError;
+import codecrafters.redis.protocol.*;
 
 import java.util.List;
 
 public class RequestHandler {
-    private final DeprecatedCacheService service;
+    private final CacheService cacheService;
 
-    public RequestHandler(DeprecatedCacheService service) {
-        this.service = service;
+    public RequestHandler(CacheService cacheService) {
+        this.cacheService = cacheService;
     }
 
     public RespData handle(RespArray request) {
@@ -21,20 +18,20 @@ public class RequestHandler {
         }
         String command = elements.get(0).getValue();
         if (command == null) {
-            return new RespError("Null bulk string as command");
+            return new RespError("Null command");
         }
         List<RespBulkString> arguments = elements.subList(1, elements.size());
         switch (command) {
             case "ping":
-                return service.ping(arguments);
+                String pingResult = cacheService.ping();
+                return new RespSimpleString(pingResult);
             case "echo":
-                return service.echo(arguments);
-            case "get":
-                return service.get(arguments);
-            case "set":
-                return service.set(arguments);
+                String echoResult = cacheService.echo("TODO");
+                return new RespBulkString(echoResult);
             default:
                 return new RespError("Unknown command: " + command);
         }
     }
+
+
 }

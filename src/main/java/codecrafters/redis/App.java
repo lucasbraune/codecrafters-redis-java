@@ -11,11 +11,11 @@ public class App {
         int port = 6379;
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             serverSocket.setReuseAddress(true);
-            DeprecatedCacheService service = new DeprecatedCacheService();
+            CacheService cacheService = new ConcurrentHashMapCacheService();
             ExecutorService executor = Executors.newCachedThreadPool();
             while (true) {
                 Socket clientSocket = serverSocket.accept();
-                RequestHandler requestHandler = new RequestHandler(service);
+                RequestHandler requestHandler = new RequestHandler(cacheService);
                 Runnable worker = new ConnectionHandler(clientSocket, requestHandler);
                 executor.execute(worker);
             }
