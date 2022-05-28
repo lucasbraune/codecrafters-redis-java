@@ -14,82 +14,103 @@ public class RequestHandler {
     }
 
     public RespData handle(RespArray request) {
-        if (isEmpty(request)) {
-            return new RespError("Empty request");
-        }
-        if (containsNull(request)) {
-            return new RespError("Request contains null bulk string");
-        }
-        String command = getCommand(request);
-        List<String> arguments = getArguments(request);
-        switch (command.toLowerCase()) {
-            case "ping":
-                String pingResult = cacheService.ping();
-                return new RespSimpleString(pingResult);
-            case "echo":
-                if (arguments.size() < 1) {
-                    return new RespError("Message missing");
-                }
-                String echoResult = cacheService.echo(arguments.get(0));
-                return new RespBulkString(echoResult);
-            case "get":
-                if (arguments.size() < 1) {
-                    return new RespError("Key missing");
-                }
-                String getResult = cacheService.get(arguments.get(0));
-                return new RespBulkString(getResult);
-            case "set":
-                if (arguments.size() < 2) {
-                    return new RespError("Key or value missing");
-                }
-                String key = arguments.get(0);
-                String value = arguments.get(1);
-                Optional<Long> px;
-                try {
-                    px = getPx(arguments);
-                } catch (NumberFormatException e) {
-                    return new RespError("Bad PX value");
-                }
-                String setResult = px.isPresent() ?
-                        cacheService.set(key, value, px.get()) :
-                        cacheService.set(key, value);
-                return new RespSimpleString(setResult);
-            default:
-                return new RespError("Unknown command: " + command);
+        try {
+            String command = getCommand(request);
+            List<String> arguments = getArguments(request);
+            switch (command) {
+                case "ping":
+                    String pingResult = cacheService.ping();
+                    return new RespSimpleString(pingResult);
+                case "echo":
+                    String echoResult = cacheService.echo(getMessage(arguments));
+                    return new RespBulkString(echoResult);
+                case "get":
+                    String getResult = cacheService.get(getKey(arguments));
+                    return new RespBulkString(getResult);
+                case "set":
+                    Optional<Long> px = getPx(arguments);
+                    String setResult = px.isPresent() ?
+                            cacheService.set(getKey(arguments), getValue(arguments), px.get()) :
+                            cacheService.set(getKey(arguments), getValue(arguments));
+                    return new RespSimpleString(setResult);
+                default:
+                    return new RespError("Unknown command: " + command);
+            }
+        } catch (BadRequestException e) {
+            return new RespError(e.getMessage());
         }
     }
 
-    private static boolean isEmpty(RespArray request) {
-        return request.getElements().isEmpty();
+    public static class BadRequestException extends Exception {
+        public BadRequestException(String message) {
+            super(message);
+        }
     }
 
-    private static boolean containsNull(RespArray request) {
-        return request.getElements().stream()
-                .noneMatch(element -> element.equals(RespBulkString.NULL));
+    private static String getCommand(RespArray request) throws BadRequestException {
+        List<RespBulkString> elements = request.getElements();
+        if (elements.isEmpty()) {
+            throw new BadRequestException("Empty request");
+        }
+        if (elements.get(0).equals(RespBulkString.NULL)) {
+            throw new BadRequestException("Command is null");
+        }
+        return elements.get(0).getValue();
     }
 
-    private static String getCommand(RespArray request) {
-        return request.getElements().get(0).getValue();
-    }
-
-    private static List<String> getArguments(RespArray request) {
+    private static List<String> getArguments(RespArray request) throws BadRequestException {
+        if (request.getElements().isEmpty()) {
+            throw new BadRequestException("Empty request");
+        }
         return request.getElements().stream()
                 .skip(1)
                 .map(RespBulkString::getValue)
                 .collect(Collectors.toList());
     }
 
-    /**
-     * @throws NumberFormatException if the third argument is "px" and the fourth argument is not an integer.
-     */
-    private static Optional<Long> getPx(List<String> arguments) {
-        boolean pxPresent = arguments.size() >= 4 &&
-                arguments.get(2).equalsIgnoreCase("PX");
-        if (pxPresent) {
-            long px = Long.parseLong(arguments.get(3));
-            return Optional.of(px);
-        } else {
+    private static String getMessage(List<String> arguments) throws BadRequestException {
+        if (arguments.isEmpty()) {
+            throw new BadRequestException("Empty request");
+        }
+        return arguments.get(0);
+    }
+
+    private static String getKey(List<String> arguments) throws BadRequestException {
+        if (arguments.isEmpty()) {
+            throw new BadRequestException("Key missing");
+        }
+        String key = arguments.get(0);
+        if (key == null) {
+            throw new BadRequestException("Null key");
+        }
+        return key;
+    }
+
+    private static String getValue(List<String> arguments) throws BadRequestException {
+        if (arguments.size() < 2) {
+            throw new BadRequestException("Value missing");
+        }
+        String value = arguments.get(1);
+        if (value == null) {
+            throw new BadRequestException("Null value");
+        }
+        return value;
+    }
+
+    private static Optional<Long> getPx(List<String> arguments) throws BadRequestException {
+        boolean pxPresent = arguments.size() >= 4 && arguments.get(2).equals("px");
+        if (!pxPresent) {
             return Optional.empty();
+        }
+        String pxString = arguments.get(3);
+        if (pxString == null) {
+            throw new BadRequestException("Null PX");
+        }
+        try {
+            long px = Long.parseUnsignedLong(arguments.get(3));
+            return Optional.of(px);
+        } catch (NumberFormatException e) {
+            throw new BadRequestException("PX not unsigned integer");
         }
     }
 }
