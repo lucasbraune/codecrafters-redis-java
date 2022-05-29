@@ -1,7 +1,7 @@
 package codecrafters.redis;
 
-import codecrafters.redis.protocol.RespArray;
-import codecrafters.redis.protocol.RespBulkString;
+import codecrafters.redis.protocol.BulkStringArray;
+import codecrafters.redis.protocol.BulkString;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
@@ -11,13 +11,13 @@ import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class RespArrayTest {
+public class BulkStringArrayTest {
     @Test
     void testEncodeThenDecode() throws IOException, InputMismatchException {
-        RespArray original = new RespArray(RespBulkString.of("Hello"), RespBulkString.of("World"));
+        BulkStringArray original = new BulkStringArray(BulkString.of("Hello"), BulkString.of("World"));
 
-        InputStream encoded = new ByteArrayInputStream(original.toRawString().getBytes());
-        RespArray reconstructed = RespArray.readFrom(encoded);
+        InputStream encoded = new ByteArrayInputStream(original.serialize().getBytes());
+        BulkStringArray reconstructed = BulkStringArray.readFrom(encoded);
 
         assertEquals(original, reconstructed);
     }
@@ -27,8 +27,8 @@ public class RespArrayTest {
         String original = "*1\r\n$4\r\nping\r\n";
         InputStream inputStream = new ByteArrayInputStream(original.getBytes());
 
-        RespArray decoded = RespArray.readFrom(inputStream);
-        String encoded = Objects.requireNonNull(decoded).toRawString();
+        BulkStringArray decoded = BulkStringArray.readFrom(inputStream);
+        String encoded = Objects.requireNonNull(decoded).serialize();
 
         assertEquals(original, encoded);
     }
@@ -38,7 +38,7 @@ public class RespArrayTest {
         String original = "*1\r\n$4\r\nping\r\n";
         InputStream inputStream = new ByteArrayInputStream(original.getBytes());
 
-        RespArray.readFrom(inputStream);
+        BulkStringArray.readFrom(inputStream);
 
         assertEquals(-1, inputStream.read());
     }

@@ -1,14 +1,15 @@
 package codecrafters.redis;
 
 import codecrafters.redis.protocol.*;
+import codecrafters.redis.protocol.Error;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class RequestHandler {
-    public static final RespSimpleString OK = new RespSimpleString("OK");
-    public static final RespSimpleString PONG = new RespSimpleString("PONG");
+    public static final SimpleString OK = new SimpleString("OK");
+    public static final SimpleString PONG = new SimpleString("PONG");
 
     private final CacheService cacheService;
 
@@ -16,7 +17,7 @@ public class RequestHandler {
         this.cacheService = cacheService;
     }
 
-    public RespData handle(RespArray request) {
+    public RedisSerializable handle(BulkStringArray request) {
         try {
             String command = getCommand(request);
             switch (command) {
@@ -29,12 +30,12 @@ public class RequestHandler {
                 case "set":
                     return handleSet(request);
                 default:
-                    return new RespError("Unknown command: " + command);
+                    return new Error("Unknown command: " + command);
             }
         } catch (BadRequestException e) {
-            return new RespError(e.getMessage());
+            return new Error(e.getMessage());
         } catch (RuntimeException e) {
-            return new RespError("Internal server error");
+            return new Error("Internal server error");
         }
     }
 
@@ -44,36 +45,36 @@ public class RequestHandler {
         }
     }
 
-    private static String getCommand(RespArray request) throws BadRequestException {
-        List<RespBulkString> elements = request.getElements();
-        if (elements.isEmpty()) {
+    private static String getCommand(BulkStringArray request) throws BadRequestException {
+        List<BulkString> bulkStrings = request.asList();
+        if (bulkStrings.isEmpty()) {
             throw new BadRequestException("Empty request");
         }
-        Optional<String> command = elements.get(0).getValue();
+        Optional<String> command = bulkStrings.get(0).getContent();
         if (!command.isPresent()) {
             throw new BadRequestException("Command is null");
         }
         return command.get();
     }
 
-    private RespSimpleString handlePing(RespArray request) {
+    private SimpleString handlePing(BulkStringArray request) {
         return PONG;
     }
 
-    private RespBulkString handleEcho(RespArray request) throws BadRequestException {
-        if (request.getElements().size() < 2) {
+    private BulkString handleEcho(BulkStringArray request) throws BadRequestException {
+        if (request.asList().size() < 2) {
             throw new BadRequestException("Message missing");
         }
-        return request.getElements().get(1);
+        return request.asList().get(1);
     }
 
-    private RespBulkString handleGet(RespArray request) throws BadRequestException {
+    private BulkString handleGet(BulkStringArray request) throws BadRequestException {
         List<String> arguments = getArguments(request);
         Optional<String> getResult = cacheService.get(getKey(arguments));
-        return getResult.map(RespBulkString::of).orElse(RespBulkString.NULL);
+        return getResult.map(BulkString::of).orElse(BulkString.NULL);
     }
 
-    private RespSimpleString handleSet(RespArray request) throws BadRequestException {
+    private SimpleString handleSet(BulkStringArray request) throws BadRequestException {
         List<String> arguments = getArguments(request);
         Optional<Long> px = getPx(arguments);
         if (px.isPresent()) {
@@ -84,13 +85,13 @@ public class RequestHandler {
         return OK;
     }
 
-    private static List<String> getArguments(RespArray request) throws BadRequestException {
-        if (request.getElements().isEmpty()) {
+    private static List<String> getArguments(BulkStringArray request) throws BadRequestException {
+        if (request.asList().isEmpty()) {
             throw new BadRequestException("Empty request");
         }
-        return request.getElements().stream()
+        return request.asList().stream()
                 .skip(1)
-                .map(RespBulkString::getValue)
+                .map(BulkString::getContent)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(Collectors.toList());

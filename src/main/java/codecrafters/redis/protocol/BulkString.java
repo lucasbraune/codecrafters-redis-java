@@ -9,36 +9,36 @@ import java.util.Optional;
 
 import static codecrafters.redis.protocol.BasicAssertions.assertEquals;
 
-public class RespBulkString implements RespData {
-    private final String value;
+public class BulkString implements RedisSerializable {
+    private final String content;
 
-    public static final RespBulkString NULL = new RespBulkString(null);
+    public static final BulkString NULL = new BulkString(null);
 
-    private RespBulkString(String value) {
-        this.value = value;
+    private BulkString(String content) {
+        this.content = content;
     }
 
-    public static RespBulkString of(String value) {
+    public static BulkString of(String value) {
         if (value == null) {
             throw new IllegalArgumentException("Value is null");
         }
-        return new RespBulkString(value);
+        return new BulkString(value);
     }
 
-    public Optional<String> getValue() {
-        return value == null ? Optional.empty() : Optional.of(value);
+    public Optional<String> getContent() {
+        return content == null ? Optional.empty() : Optional.of(content);
     }
 
-    public String toRawString() {
-        return value != null ?
-                "$" + value.length() + "\r\n" + value + "\r\n" :
+    public String serialize() {
+        return content != null ?
+                "$" + content.length() + "\r\n" + content + "\r\n" :
                 "$-1\r\n";
     }
 
     /**
      * See https://redis.io/docs/reference/protocol-spec/#resp-bulk-strings
      */
-    public static RespBulkString readFrom(InputStream input)
+    public static BulkString readFrom(InputStream input)
             throws InputMismatchException, IOException {
         int byteOfInput = input.read();
         if (byteOfInput == -1) {
@@ -60,7 +60,7 @@ public class RespBulkString implements RespData {
         }
 
         if (length < 0) {
-            return RespBulkString.NULL;
+            return BulkString.NULL;
         }
 
         byte[] data = new byte[length];
@@ -72,7 +72,7 @@ public class RespBulkString implements RespData {
         assertEquals('\r', input.read());
         assertEquals('\n', input.read());
 
-        return RespBulkString.of(new String(data));
+        return BulkString.of(new String(data));
     }
 
     private static void assertPositive(int d) throws InputMismatchException {
@@ -86,13 +86,13 @@ public class RespBulkString implements RespData {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        RespBulkString that = (RespBulkString) o;
+        BulkString that = (BulkString) o;
 
-        return value != null ? value.equals(that.value) : that.value == null;
+        return content != null ? content.equals(that.content) : that.content == null;
     }
 
     @Override
     public int hashCode() {
-        return value != null ? value.hashCode() : 0;
+        return content != null ? content.hashCode() : 0;
     }
 }

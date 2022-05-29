@@ -6,36 +6,38 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static codecrafters.redis.protocol.BasicAssertions.assertDigit;
 import static codecrafters.redis.protocol.BasicAssertions.assertEquals;
 
-public class RespArray implements RespData {
-    final private List<RespBulkString> elements;
+public class BulkStringArray implements RedisSerializable {
+    final private List<BulkString> bulkStrings;
 
-    public RespArray(List<RespBulkString> elements) {
-        this.elements = new ArrayList<>(elements);
+    public BulkStringArray(List<BulkString> elements) {
+        this.bulkStrings = new ArrayList<>(elements);
     }
 
-    public RespArray(RespBulkString... elements) {
+    public BulkStringArray(BulkString... elements) {
         this(Arrays.asList(elements));
     }
 
-    public List<RespBulkString> getElements() {
-        return elements;
+    public List<BulkString> asList() {
+        return Collections.unmodifiableList(bulkStrings);
     }
 
-    public String toRawString() {
+    @Override
+    public String serialize() {
         StringBuilder sb = new StringBuilder();
-        sb.append("*").append(elements.size()).append("\r\n");
-        for (RespBulkString element : elements) {
-            sb.append(element.toRawString());
+        sb.append("*").append(bulkStrings.size()).append("\r\n");
+        for (BulkString bulkString : bulkStrings) {
+            sb.append(bulkString.serialize());
         }
         return sb.toString();
     }
 
-    public static RespArray readFrom(InputStream input) throws InputMismatchException, IOException {
+    public static BulkStringArray readFrom(InputStream input) throws InputMismatchException, IOException {
         int byteOfInput = input.read();
         if (byteOfInput == -1) {
             return null;
@@ -50,14 +52,14 @@ public class RespArray implements RespData {
 
         assertEquals('\n', input.read());
 
-        List<RespBulkString> elements = new ArrayList<>(length);
+        List<BulkString> elements = new ArrayList<>(length);
         for (int i = 0; i < length; i++) {
-            RespBulkString element = RespBulkString.readFrom(input);
+            BulkString element = BulkString.readFrom(input);
             assertNotNull(element);
             elements.add(element);
         }
 
-        return new RespArray(elements);
+        return new BulkStringArray(elements);
     }
 
     private static void assertNotNull(Object obj) throws InputMismatchException {
@@ -71,13 +73,13 @@ public class RespArray implements RespData {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        RespArray respArray = (RespArray) o;
+        BulkStringArray bulkStringArray = (BulkStringArray) o;
 
-        return elements.equals(respArray.elements);
+        return bulkStrings.equals(bulkStringArray.bulkStrings);
     }
 
     @Override
     public int hashCode() {
-        return elements.hashCode();
+        return bulkStrings.hashCode();
     }
 }
