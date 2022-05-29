@@ -7,6 +7,9 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class RequestHandler {
+    public static final RespSimpleString OK = new RespSimpleString("OK");
+    public static final RespSimpleString PONG = new RespSimpleString("PONG");
+
     private final CacheService cacheService;
 
     public RequestHandler(CacheService cacheService) {
@@ -19,25 +22,27 @@ public class RequestHandler {
             List<String> arguments = getArguments(request);
             switch (command) {
                 case "ping":
-                    String pingResult = cacheService.ping();
-                    return new RespSimpleString(pingResult);
+                    return PONG;
                 case "echo":
-                    String echoResult = cacheService.echo(getMessage(arguments));
-                    return new RespBulkString(echoResult);
+                    return getMessage(request);
                 case "get":
                     String getResult = cacheService.get(getKey(arguments));
                     return new RespBulkString(getResult);
                 case "set":
                     Optional<Long> px = getPx(arguments);
-                    String setResult = px.isPresent() ?
-                            cacheService.set(getKey(arguments), getValue(arguments), px.get()) :
-                            cacheService.set(getKey(arguments), getValue(arguments));
-                    return new RespSimpleString(setResult);
+                    if (px.isPresent()) {
+                        cacheService.set(getKey(arguments), getValue(arguments), px.get());
+                    } else {
+                        cacheService.set(getKey(arguments), getValue(arguments));
+                    }
+                    return OK;
                 default:
                     return new RespError("Unknown command: " + command);
             }
         } catch (BadRequestException e) {
             return new RespError(e.getMessage());
+        } catch (RuntimeException e) {
+            return new RespError("Internal server error");
         }
     }
 
@@ -68,11 +73,11 @@ public class RequestHandler {
                 .collect(Collectors.toList());
     }
 
-    private static String getMessage(List<String> arguments) throws BadRequestException {
-        if (arguments.isEmpty()) {
-            throw new BadRequestException("Empty request");
+    private static RespBulkString getMessage(RespArray request) throws BadRequestException {
+        if (request.getElements().size() < 2) {
+            throw new BadRequestException("Message missing");
         }
-        return arguments.get(0);
+        return request.getElements().get(1);
     }
 
     private static String getKey(List<String> arguments) throws BadRequestException {

@@ -31,31 +31,19 @@ public class ConcurrentHashMapCacheService implements CacheService {
     private final ConcurrentHashMap<String, CacheItem> map = new ConcurrentHashMap<>();
 
     @Override
-    public String ping() {
-        return PONG;
-    }
-
-    @Override
-    public String echo(String message) {
-        return message;
-    }
-
-    @Override
     public String get(String key) {
         CacheItem item = map.get(key);
         return (item == null || item.hasExpired()) ? null : item.getValue();
     }
 
     @Override
-    public String set(String key, String value) {
+    public void set(String key, String value) {
         map.put(key, new CacheItem(value));
-        return OK;
     }
 
     @Override
-    public String set(String key, String value, long px) {
+    public void set(String key, String value, long px) {
         Instant expiresAt = Instant.now().plus(Duration.ofMillis(px));
         map.put(key, new CacheItem(value, expiresAt));
-        return OK;
     }
 }
