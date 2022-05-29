@@ -9,6 +9,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
+import static codecrafters.redis.protocol.Deserialisation.readBulkStringArray;
+
 public class ConnectionHandler implements Runnable {
 
     private final Socket clientSocket;
@@ -29,9 +31,9 @@ public class ConnectionHandler implements Runnable {
         try (InputStream in = new BufferedInputStream(clientSocket.getInputStream());
              OutputStream out = clientSocket.getOutputStream()
         ) {
-            for (BulkStringArray request = BulkStringArray.readFrom(in);
+            for (BulkStringArray request = readBulkStringArray(in);
                  request != null;
-                 request = BulkStringArray.readFrom(in)
+                 request = readBulkStringArray(in)
             ) {
                 RedisSerializable response = requestHandler.handle(request);
                 out.write(response.serialize().getBytes());

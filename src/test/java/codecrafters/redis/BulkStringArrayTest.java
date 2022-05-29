@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
 
+import static codecrafters.redis.protocol.Deserialisation.readBulkStringArray;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class BulkStringArrayTest {
@@ -17,7 +18,7 @@ public class BulkStringArrayTest {
         BulkStringArray original = new BulkStringArray(BulkString.of("Hello"), BulkString.of("World"));
 
         InputStream encoded = new ByteArrayInputStream(original.serialize().getBytes());
-        BulkStringArray reconstructed = BulkStringArray.readFrom(encoded);
+        BulkStringArray reconstructed = readBulkStringArray(encoded);
 
         assertEquals(original, reconstructed);
     }
@@ -27,7 +28,7 @@ public class BulkStringArrayTest {
         String original = "*1\r\n$4\r\nping\r\n";
         InputStream inputStream = new ByteArrayInputStream(original.getBytes());
 
-        BulkStringArray decoded = BulkStringArray.readFrom(inputStream);
+        BulkStringArray decoded = readBulkStringArray(inputStream);
         String encoded = Objects.requireNonNull(decoded).serialize();
 
         assertEquals(original, encoded);
@@ -38,7 +39,7 @@ public class BulkStringArrayTest {
         String original = "*1\r\n$4\r\nping\r\n";
         InputStream inputStream = new ByteArrayInputStream(original.getBytes());
 
-        BulkStringArray.readFrom(inputStream);
+        readBulkStringArray(inputStream);
 
         assertEquals(-1, inputStream.read());
     }

@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
 
+import static codecrafters.redis.protocol.Deserialisation.readBulkString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class BulkStringTest {
@@ -16,7 +17,7 @@ public class BulkStringTest {
         BulkString original = BulkString.of("Hello");
 
         InputStream encoded = new ByteArrayInputStream(original.serialize().getBytes());
-        BulkString reconstructed = BulkString.readFrom(encoded);
+        BulkString reconstructed = readBulkString(encoded);
 
         assertEquals(original, reconstructed);
     }
@@ -26,7 +27,7 @@ public class BulkStringTest {
         String original = "$4\r\nping\r\n";
         InputStream inputStream = new ByteArrayInputStream(original.getBytes());
 
-        BulkString decoded = BulkString.readFrom(inputStream);
+        BulkString decoded = readBulkString(inputStream);
         String encoded = Objects.requireNonNull(decoded).serialize();
 
         assertEquals(original, encoded);
@@ -37,7 +38,7 @@ public class BulkStringTest {
         String original = "$4\r\nping\r\n";
         InputStream inputStream = new ByteArrayInputStream(original.getBytes());
 
-        BulkString.readFrom(inputStream);
+        readBulkString(inputStream);
 
         assertEquals(-1, inputStream.read());
     }
@@ -56,7 +57,7 @@ public class BulkStringTest {
         String encoded = "$0\r\n\r\n";
         InputStream inputStream = new ByteArrayInputStream(encoded.getBytes());
 
-        BulkString actual = BulkString.readFrom(inputStream);
+        BulkString actual = readBulkString(inputStream);
 
         BulkString expected = BulkString.of("");
         assertEquals(expected, actual);
@@ -77,7 +78,7 @@ public class BulkStringTest {
         String encoded = "$-1\r\n";
         InputStream inputStream = new ByteArrayInputStream(encoded.getBytes());
 
-        BulkString actual = BulkString.readFrom(inputStream);
+        BulkString actual = readBulkString(inputStream);
 
         assertEquals(BulkString.NULL, actual);
     }
