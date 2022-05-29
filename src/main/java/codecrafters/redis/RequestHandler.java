@@ -26,8 +26,8 @@ public class RequestHandler {
                 case "echo":
                     return getMessage(request);
                 case "get":
-                    String getResult = cacheService.get(getKey(arguments));
-                    return new RespBulkString(getResult);
+                    Optional<String> getResult = cacheService.get(getKey(arguments));
+                    return getResult.map(RespBulkString::of).orElse(RespBulkString.NULL);
                 case "set":
                     Optional<Long> px = getPx(arguments);
                     if (px.isPresent()) {
@@ -57,10 +57,11 @@ public class RequestHandler {
         if (elements.isEmpty()) {
             throw new BadRequestException("Empty request");
         }
-        if (elements.get(0).equals(RespBulkString.NULL)) {
+        Optional<String> command = elements.get(0).getValue();
+        if (!command.isPresent()) {
             throw new BadRequestException("Command is null");
         }
-        return elements.get(0).getValue();
+        return command.get();
     }
 
     private static List<String> getArguments(RespArray request) throws BadRequestException {
@@ -70,6 +71,8 @@ public class RequestHandler {
         return request.getElements().stream()
                 .skip(1)
                 .map(RespBulkString::getValue)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
                 .collect(Collectors.toList());
     }
 

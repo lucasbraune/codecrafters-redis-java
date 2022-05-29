@@ -1,7 +1,9 @@
 package codecrafters.redis;
 
+import java.util.Optional;
+
 public interface CacheService {
-    String get(String key);
+    Optional<String> get(String key);
 
     void set(String key, String value);
 

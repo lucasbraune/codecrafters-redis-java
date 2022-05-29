@@ -2,6 +2,7 @@ package codecrafters.redis;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ConcurrentHashMapCacheService implements CacheService {
@@ -31,9 +32,11 @@ public class ConcurrentHashMapCacheService implements CacheService {
     private final ConcurrentHashMap<String, CacheItem> map = new ConcurrentHashMap<>();
 
     @Override
-    public String get(String key) {
+    public Optional<String> get(String key) {
         CacheItem item = map.get(key);
-        return (item == null || item.hasExpired()) ? null : item.getValue();
+        return (item == null || item.hasExpired()) ?
+                Optional.empty() :
+                Optional.of(item.getValue());
     }
 
     @Override

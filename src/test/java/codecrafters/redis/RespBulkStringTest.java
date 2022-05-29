@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class RespBulkStringTest {
     @Test
     void testEncodeThenDecode() throws IOException, InputMismatchException {
-        RespBulkString original = new RespBulkString("Hello");
+        RespBulkString original = RespBulkString.of("Hello");
 
         InputStream encoded = new ByteArrayInputStream(original.toRawString().getBytes());
         RespBulkString reconstructed = RespBulkString.readFrom(encoded);
@@ -46,7 +46,7 @@ public class RespBulkStringTest {
     void testEncodeEmptyString() {
         String expected = "$0\r\n\r\n";
 
-        String actual = new RespBulkString("").toRawString();
+        String actual = RespBulkString.of("").toRawString();
 
         assertEquals(expected, actual);
     }
@@ -58,13 +58,13 @@ public class RespBulkStringTest {
 
         RespBulkString actual = RespBulkString.readFrom(inputStream);
 
-        RespBulkString expected = new RespBulkString("");
+        RespBulkString expected = RespBulkString.of("");
         assertEquals(expected, actual);
     }
 
     @Test
     void testEncodeNull() {
-        RespBulkString bulkString = new RespBulkString(null);
+        RespBulkString bulkString = RespBulkString.NULL;
 
         String actual = bulkString.toRawString();
 
@@ -79,6 +79,6 @@ public class RespBulkStringTest {
 
         RespBulkString actual = RespBulkString.readFrom(inputStream);
 
-        assertEquals(new RespBulkString(null), actual);
+        assertEquals(RespBulkString.NULL, actual);
     }
 }

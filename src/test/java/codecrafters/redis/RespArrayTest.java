@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class RespArrayTest {
     @Test
     void testEncodeThenDecode() throws IOException, InputMismatchException {
-        RespArray original = new RespArray(new RespBulkString("Hello"), new RespBulkString("World"));
+        RespArray original = new RespArray(RespBulkString.of("Hello"), RespBulkString.of("World"));
 
         InputStream encoded = new ByteArrayInputStream(original.toRawString().getBytes());
         RespArray reconstructed = RespArray.readFrom(encoded);

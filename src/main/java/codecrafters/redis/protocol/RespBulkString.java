@@ -5,6 +5,7 @@ import codecrafters.redis.InputMismatchException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Optional;
 
 import static codecrafters.redis.protocol.BasicAssertions.assertEquals;
 
@@ -13,12 +14,19 @@ public class RespBulkString implements RespData {
 
     public static final RespBulkString NULL = new RespBulkString(null);
 
-    public RespBulkString(String value) {
+    private RespBulkString(String value) {
         this.value = value;
     }
 
-    public String getValue() {
-        return value;
+    public static RespBulkString of(String value) {
+        if (value == null) {
+            throw new IllegalArgumentException("Value is null");
+        }
+        return new RespBulkString(value);
+    }
+
+    public Optional<String> getValue() {
+        return value == null ? Optional.empty() : Optional.of(value);
     }
 
     public String toRawString() {
@@ -52,7 +60,7 @@ public class RespBulkString implements RespData {
         }
 
         if (length < 0) {
-            return new RespBulkString(null);
+            return RespBulkString.NULL;
         }
 
         byte[] data = new byte[length];
@@ -64,7 +72,7 @@ public class RespBulkString implements RespData {
         assertEquals('\r', input.read());
         assertEquals('\n', input.read());
 
-        return new RespBulkString(new String(data));
+        return RespBulkString.of(new String(data));
     }
 
     private static void assertPositive(int d) throws InputMismatchException {
