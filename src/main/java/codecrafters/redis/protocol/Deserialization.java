@@ -14,10 +14,10 @@ public class Deserialization {
             throws InputMismatchException, IOException {
         int firstByte = input.read();
         assertEquals('$', firstByte);
-        return readBulkStringMinusFirstByte(input);
+        return readBulkStringAfterFirstByte(input);
     }
 
-    private static BulkString readBulkStringMinusFirstByte(InputStream input)
+    private static BulkString readBulkStringAfterFirstByte(InputStream input)
             throws InputMismatchException, IOException {
         int length = readIntCrlf(input);
         if (length < 0) {
@@ -33,7 +33,7 @@ public class Deserialization {
             throws InputMismatchException, IOException {
         int firstByte = input.read();
         assertEquals('*', firstByte);
-        return readBulkStringArrayMinusFirstByte(input);
+        return readBulkStringArrayAfterFirstByte(input);
     }
 
     public static Optional<BulkStringArray> readBulkStringArrayOrEof(InputStream input)
@@ -41,7 +41,7 @@ public class Deserialization {
         int firstByte = input.read();
         switch (firstByte) {
             case '*':
-                return Optional.of(readBulkStringArrayMinusFirstByte(input));
+                return Optional.of(readBulkStringArrayAfterFirstByte(input));
             case -1:
                 return Optional.empty();
             default:
@@ -49,7 +49,7 @@ public class Deserialization {
         }
     }
 
-    private static BulkStringArray readBulkStringArrayMinusFirstByte(InputStream input)
+    private static BulkStringArray readBulkStringArrayAfterFirstByte(InputStream input)
             throws InputMismatchException, IOException {
         int length = readIntCrlf(input);
         if (length < 0) {
