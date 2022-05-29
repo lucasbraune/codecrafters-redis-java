@@ -43,7 +43,7 @@ public class ConcurrentHashMapCacheService implements CacheService {
     @Override
     public String get(String key) {
         CacheItem item = map.get(key);
-        return item.hasExpired() ? null : item.getValue();
+        return (item == null || item.hasExpired()) ? null : item.getValue();
     }
 
     @Override
