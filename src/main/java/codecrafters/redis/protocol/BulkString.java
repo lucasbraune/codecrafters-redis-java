@@ -7,6 +7,9 @@ public class BulkString implements RedisSerializable {
 
     public static final BulkString NULL = new BulkString(null);
 
+    /**
+     * Use the {@code BulkString.of} factory instead.
+     */
     private BulkString(String content) {
         this.content = content;
     }

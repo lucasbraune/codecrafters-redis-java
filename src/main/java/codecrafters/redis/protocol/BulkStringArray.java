@@ -8,6 +8,9 @@ import java.util.List;
 public class BulkStringArray implements RedisSerializable {
     final private List<BulkString> bulkStrings;
 
+    /**
+     * @throws NullPointerException if elements is null
+     */
     public BulkStringArray(List<BulkString> elements) {
         this.bulkStrings = new ArrayList<>(elements);
     }
