@@ -19,23 +19,15 @@ public class RequestHandler {
     public RespData handle(RespArray request) {
         try {
             String command = getCommand(request);
-            List<String> arguments = getArguments(request);
             switch (command) {
                 case "ping":
-                    return PONG;
+                    return handlePing(request);
                 case "echo":
-                    return getMessage(request);
+                    return handleEcho(request);
                 case "get":
-                    Optional<String> getResult = cacheService.get(getKey(arguments));
-                    return getResult.map(RespBulkString::of).orElse(RespBulkString.NULL);
+                    return handleGet(request);
                 case "set":
-                    Optional<Long> px = getPx(arguments);
-                    if (px.isPresent()) {
-                        cacheService.set(getKey(arguments), getValue(arguments), px.get());
-                    } else {
-                        cacheService.set(getKey(arguments), getValue(arguments));
-                    }
-                    return OK;
+                    return handleSet(request);
                 default:
                     return new RespError("Unknown command: " + command);
             }
@@ -64,6 +56,34 @@ public class RequestHandler {
         return command.get();
     }
 
+    private RespSimpleString handlePing(RespArray request) {
+        return PONG;
+    }
+
+    private RespBulkString handleEcho(RespArray request) throws BadRequestException {
+        if (request.getElements().size() < 2) {
+            throw new BadRequestException("Message missing");
+        }
+        return request.getElements().get(1);
+    }
+
+    private RespBulkString handleGet(RespArray request) throws BadRequestException {
+        List<String> arguments = getArguments(request);
+        Optional<String> getResult = cacheService.get(getKey(arguments));
+        return getResult.map(RespBulkString::of).orElse(RespBulkString.NULL);
+    }
+
+    private RespSimpleString handleSet(RespArray request) throws BadRequestException {
+        List<String> arguments = getArguments(request);
+        Optional<Long> px = getPx(arguments);
+        if (px.isPresent()) {
+            cacheService.set(getKey(arguments), getValue(arguments), px.get());
+        } else {
+            cacheService.set(getKey(arguments), getValue(arguments));
+        }
+        return OK;
+    }
+
     private static List<String> getArguments(RespArray request) throws BadRequestException {
         if (request.getElements().isEmpty()) {
             throw new BadRequestException("Empty request");
@@ -74,13 +94,6 @@ public class RequestHandler {
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(Collectors.toList());
-    }
-
-    private static RespBulkString getMessage(RespArray request) throws BadRequestException {
-        if (request.getElements().size() < 2) {
-            throw new BadRequestException("Message missing");
-        }
-        return request.getElements().get(1);
     }
 
     private static String getKey(List<String> arguments) throws BadRequestException {
