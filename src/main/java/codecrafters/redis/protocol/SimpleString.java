@@ -1,13 +1,13 @@
 package codecrafters.redis.protocol;
 
 public class SimpleString implements RedisSerializable {
-    private final String content;
+    private final String message;
 
-    public SimpleString(String content) {
-        this.content = content;
+    public SimpleString(String message) {
+        this.message = message;
     }
 
     public String serialize() {
-        return "+" + content + "\r\n";
+        return "+" + message + "\r\n";
     }
 }

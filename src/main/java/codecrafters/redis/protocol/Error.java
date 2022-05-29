@@ -1,13 +1,13 @@
 package codecrafters.redis.protocol;
 
 public class Error implements RedisSerializable {
-    private final String value;
+    private final String message;
 
     public Error(String message) {
-        this.value = message;
+        this.message = message;
     }
 
     public String serialize() {
-        return "-" + value + "\r\n";
+        return "-" + message + "\r\n";
     }
 }
