@@ -8,8 +8,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.Optional;
 
-import static codecrafters.redis.protocol.Deserialisation.readBulkStringArray;
+import static codecrafters.redis.protocol.Deserialization.readBulkStringArrayOrEof;
 
 public class ConnectionHandler implements Runnable {
 
@@ -31,11 +32,11 @@ public class ConnectionHandler implements Runnable {
         try (InputStream in = new BufferedInputStream(clientSocket.getInputStream());
              OutputStream out = clientSocket.getOutputStream()
         ) {
-            for (BulkStringArray request = readBulkStringArray(in);
-                 request != null;
-                 request = readBulkStringArray(in)
+            for (Optional<BulkStringArray> request = readBulkStringArrayOrEof(in);
+                 request.isPresent();
+                 request = readBulkStringArrayOrEof(in)
             ) {
-                RedisSerializable response = requestHandler.handle(request);
+                RedisSerializable response = requestHandler.handle(request.get());
                 out.write(response.serialize().getBytes());
             }
         } catch (InputMismatchException e) {

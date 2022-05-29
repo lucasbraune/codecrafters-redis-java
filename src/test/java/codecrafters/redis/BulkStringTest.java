@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
 
-import static codecrafters.redis.protocol.Deserialisation.readBulkString;
+import static codecrafters.redis.protocol.Deserialization.readBulkString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class BulkStringTest {
